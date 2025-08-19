@@ -9,23 +9,23 @@ st.title("📮 Applications Backlog – What-if Simulator")
 
 with st.sidebar:
     st.header("Controls")
-    days = st.slider("Days to simulate", 7, 365, 180, step=1)
+    days = st.slider("Dager frem i tid", 7, 365, 180, step=1)
     seed = st.number_input("Random seed", min_value=0, max_value=10_000, value=42, step=1)
-    initial_backlog = st.number_input("Initial backlog", 0, 10_000, 25, step=1)
+    initial_backlog = st.number_input("Backlog ved oppstart", 0, 10_000, 25, step=1)
 
-    st.subheader("Arrivals (per day)")
-    inflow_low = st.slider("Low", 0, 500, 30, 1)
-    inflow_high = st.slider("High", inflow_low, 500, 60, 1)
+    st.subheader("Nye saker (per dag)")
+    inflow_low = st.slider("Lav", 0, 500, 30, 1)
+    inflow_high = st.slider("Høy", inflow_low, 500, 60, 1)
 
-    st.subheader("Processing capacity")
-    capacity = st.slider("Daily processing capacity", 0, 500, 45, 1)
-    variability_pct = st.slider("Capacity variability (±%)", 0, 100, 15, 1)
+    st.subheader("Behandlingskapasitet")
+    capacity = st.slider("Daglig behandlingskapasitet", 0, 500, 45, 1)
+    variability_pct = st.slider("Variabilitet i kapasitet (±%)", 0, 100, 15, 1)
     variability = variability_pct / 100.0
 
     st.subheader("Policy")
-    rejection_pct = st.slider("Rejection rate (%)", 0, 100, 50, 1)
+    rejection_pct = st.slider("Avslagsrate (%)", 0, 100, 50, 1)
     rejection_rate = rejection_pct / 100.0
-    priority_spillover = st.checkbox("Allow processing some of today's accepted immediately", value=False)
+    priority_spillover = st.checkbox("Tillat behandling av noen av dagens aksepterte umiddelbart", value=False)
 
 # Build model (seed is handled by numpy RNG inside; we re-seed by recreating the model)
 np.random.seed(seed)
@@ -55,28 +55,6 @@ col4.metric("Max backlog", int(backlog.max()))
 # Charts
 st.subheader("Backlog over time")
 st.line_chart(pd.DataFrame({"Backlog": backlog}))
-
-st.subheader("Daily arrivals split")
-st.line_chart(pd.DataFrame({
-    "Arrivals (total)": arrivals,
-    "Accepted": accepted,
-    "Rejected": rejected
-}))
-
-# Tabular + download
-df = pd.DataFrame({
-    "day": np.arange(days),
-    "arrivals_total": arrivals,
-    "accepted": accepted,
-    "rejected": rejected,
-    "backlog": backlog
-})
-st.download_button(
-    "Download CSV",
-    df.to_csv(index=False).encode("utf-8"),
-    file_name="applications_simulation.csv",
-    mime="text/csv"
-)
 
 st.caption(
     "Tip: raise capacity or lower variability to control backlog; change rejection rate to see instant impact on accepted inflow."
